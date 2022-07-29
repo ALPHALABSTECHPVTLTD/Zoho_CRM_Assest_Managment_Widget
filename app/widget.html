@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-compatible"content="IE-edge">
+  <meta name="viewport"content="width-device-width,inital-scale=1.0">
+<script src="  https://live.zwidgets.com/js-sdk/1.1/ZohoEmbededAppSDK.min.js"></script>
+<!--script type="text/javascript" src="js/script.js"></script-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<!-- <script type="text/javascript" src="test.js"></script> -->
+ <style>
+table, td {
+  border: 1px solid black;
+}
+</style>
+ <script>
+ var dealid;
+ ZOHO.embeddedApp.on("PageLoad",function(data){
+    console.log(data)
+    dealid = data.EntityId;
+    console.log(dealid)
+});  
+ZOHO.embeddedApp.init();
+
+</script>
+</head>
+<body>
+<p>Subform</p>
+<table id="myTable">
+  <th>products</th><span><th>quantity</th></span>
+</table>
+<br>
+
+<button onclick="myCreateFunction()">Add Product</button>
+
+
+<script>
+function myCreateFunction() {
+ var cid;
+ZOHO.CRM.API.getRecord({Entity:"Deals",RecordID:dealid})
+.then(function(data){
+  console.log(data)
+  cid=data.data[0].Contact_Name.id;
+  console.log(cid)
+  //Products=data.data[0].Subform_3;
+  //console.log(Products)
+ // const cars = [];
+//cars[0]= ''+cid+'';
+ //console.log(cars[0])
+  //pid='"'+cid+'"'
+  //console.log(pid)
+  var coid=""+cid+""
+ console.log(coid)
+ var rowcount=myTable.rows.length;
+  console.log(rowcount)
+  var table = document.getElementById("myTable");
+  var row = table.insertRow(myTable.rows.length);
+  var cell1 = row.insertCell(0);
+  var cell2 = row.insertCell(0);
+  var cell3 = row.insertCell(0);
+  cell3.innerHTML +='<select id="product'+rowcount+'" onchange="lm()"><option id="none"></option></select>';
+  //cell1.innerHTML +='<select id="product" onchange="lm()">'
+  cell2.innerHTML +='<input type="text" id="test'+rowcount+'"name="test" onkeyup="lm()">'
+  cell1.innerHTML +='<button onclick="myDeleteFunction(this)">Remove</button>'
+  ZOHO.CRM.API.getRelatedRecords({Entity:"Contacts",RecordID:coid,RelatedList:"Product",page:1,per_page:200})
+.then(function(data){
+    console.log(data)
+	//id1= data.data[0].id;
+	//id2= data.data[1].id;
+  //console.log(id1)
+ // console.log(id2)
+ const sm = [];
+ for (i=0;i<data.data.length;i++)
+{
+
+   ridi=data.data[i].id;
+   namei=data.data[i].Product_Name;
+  console.log(ridi)
+   console.log(namei)
+   sm.push(namei);
+}
+if(rowcount>=2)
+{
+for(i=1;i<rowcount;i++)
+{
+var value = document.getElementById("product"+i+""); 
+   console.log(value) 
+   var getvalue = value.options[value.selectedIndex].value;  
+   console.log(getvalue)
+   var gettext = value.options[value.selectedIndex].text;
+   console.log(gettext)
+   var imp1 =sm.indexOf(""+gettext+"");
+   console.log(imp1);
+   r=imp1;
+   sm.splice(r,1)
+   console.log(sm)
+ }
+ }
+for (i=0;i<sm.length;i++)
+{ 
+var opt = document.createElement("option");
+  document.getElementById("product"+rowcount+"").innerHTML +='<option id="' + i + '">' + sm[i] + '</option>';
+  console.log(sm)
+ }
+})
+})
+document.getElementById('result').innerHTML=""
+}
+function myDeleteFunction(r) {
+  var j = r.parentNode.parentNode.rowIndex;
+  console.log(j);
+  console.log(rowcount2);
+  document.getElementById("myTable").deleteRow(j);
+  var rowcount2=myTable.rows.length;
+  for (i=j;i<rowcount2;i++)
+  {
+  var kk=i+1;
+  console.log(kk);
+   var ppp =document.getElementById("product"+kk+"").id="product"+i+"";
+   var qqq =document.getElementById("test"+kk+"").id="test"+i+"";
+    console.log(ppp);
+	console.log(qqq);
+  }
+  var d=j-1;
+  pr.splice(d,1)
+  qa.splice(d,1)
+  console.log(pr)
+  console.log(qa)
+  lm();
+}
+</script>
+<script>
+const pr =[];
+const li =[];
+const qa =[];
+const na =[];
+function lm(){
+var rowcount=myTable.rows.length;
+console.log(rowcount)
+qa.splice(0,qa.length)
+li.splice(0,li.length)
+na.splice(0,na.length)
+for(i=1;i<rowcount;i++)
+{
+var value = document.getElementById("product"+i+""); 
+   console.log(value) 
+   var getvalue = value.options[value.selectedIndex].value;  
+   console.log(getvalue)
+   var gettext = value.options[value.selectedIndex].text;
+   console.log(gettext)
+ var quantity=document.getElementById("test"+i+"").value;
+ console.log(quantity)
+ var g=i-1;
+ li.push(gettext);
+ qa.push(quantity)
+   ZOHO.CRM.API.searchRecord({Entity:"Products",Type:"criteria",Query:"(Product_Name:equals:"+li[g]+")"})
+.then(function(data){
+    console.log(data)
+	id= data.data[0].id;
+	name1=data.data[0].Product_Name;
+	console.log(name1)
+	console.log(id)
+	na.push(id);
+	na.push(name1);
+	pr.splice(0,pr.length)
+	for(i=0;i<li.length;i++)
+	{
+	var imp =na.indexOf(""+li[i]+"");
+   console.log(imp);
+   var k=imp-1;
+   console.log(k);
+   pr.push(na[k]);
+   }
+})
+}
+console.log(pr);
+console.log(qa);
+console.log(li);
+console.log(na);
+document.getElementById('result').innerHTML=""
+};
+</script>
+ <button onclick ="takingletter()"> Submit </button><br><br>
+<label>Result : </label>
+<output id="result"></output><br><br>
+<script>
+var Products;
+function takingletter()
+{
+const pdlist = [];
+for(i=0;i<pr.length;i++)
+{
+var q=i+1;
+console.log(q)
+var Product1 = {
+    id:pr[i]
+	}
+console.log(Product1)
+var cars={
+    Products:Product1,
+	Quantity:qa[i]}
+console.log(cars)
+pdlist.push(cars);
+}
+console.log(pdlist)
+var config={
+  Entity:"Deals",
+  APIData:{
+        "id": dealid.toString(),
+        "Subform_2":pdlist
+  },
+  Trigger:["workflow"]
+}
+ZOHO.CRM.API.updateRecord(config)
+.then(function(data){
+    console.log(data)
+})
+setTimeout(() => {
+    document.getElementById('result').innerHTML="update successful"
+  },1000);
+};
+</script>
+ 
+	<button style="color:white;background-color:green;"onClick="window.location.reload();">Refresh Page</button>
+<script>
+const reloadtButton = document.querySelector("#reload");
+// Reload everything:
+function reload() {
+    reload = window.location.reload();
+}
+// Event listeners for reload
+reloadButton.addEventListener("click", reload, false);
+</script>
+<button style="color:white;background-color: red;"onclick="GoBackWithRefresh();return false;">close</button>
+<script>
+function GoBackWithRefresh(event) {
+        ZOHO.CRM.UI.Popup.closeReload()
+.then(function(data){
+    console.log(data)
+})
+}
+</script>
+</body>
+</html>
